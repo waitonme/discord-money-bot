@@ -115,6 +115,7 @@ client.on('message', message => {
                 const target = light[1];
                 money[author][target] = eval(light[2])
             }
+            const a = money[author]
             let k = ""
             for (key in a) {
                 if (!a[key])
