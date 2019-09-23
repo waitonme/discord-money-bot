@@ -8,6 +8,8 @@ client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
 });
 
+// 주기적으로 리마인드 시키기
+// toss나 카뱅 연동
 
 client.on('message', msg => {
     if (msg.content === '!사용법' || msg.content === '!명령어' || msg.content === '!명령') {
