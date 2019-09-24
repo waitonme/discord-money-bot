@@ -4,7 +4,6 @@ var fs = require("fs");
 const client = new Discord.Client();
 
 function printAccount(a) {
-    const a = money[author]
     let k = ""
     for (key in a) {
         if (!a[key])
@@ -102,7 +101,7 @@ client.on('message', message => {
             message.channel.send(`${target} : ${money[author][target]}`)
             record(money, log)
         } else if (message.content.startsWith('!취소')) {
-            const command;
+            let command;
             if (command = log[author].pop() == undefined)
                 return message.channel.send('명령어 오류')
             const light = command.split(' ');
