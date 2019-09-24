@@ -18,8 +18,10 @@ function printAccount(a) {
 }
 
 function record(money, log) {
-    fs.writeFile("data.json", JSON.stringify(money), "utf8", () => { })
-    fs.writeFile("log.json", JSON.stringify(log), "utf8", () => { })
+    if (money)
+        fs.writeFile("data.json", JSON.stringify(money), "utf8", () => { })
+    if (log)
+        fs.writeFile("log.json", JSON.stringify(log), "utf8", () => { })
 }
 
 client.on('ready', () => {
@@ -66,36 +68,36 @@ client.on('message', message => {
             log[author] = []
         }
 
+        const splitedLine = message.content.toString().split(' ');
 
         if (message.content.startsWith('!빚')) {
-            const light = message.content.toString().split(' ');
+
             const result = money[author];
 
-            if (!(light[1] && light[2]))
+            if (!(splitedLine[1] && splitedLine[2]))
                 return message.channel.send('명령어 오류')
-            if (!new RegExp(/[가-힣a-zA-Z]/g).test(light[1]))
+            if (!new RegExp(/[가-힣a-zA-Z]/g).test(splitedLine[1]))
                 return message.channel.send('이름 입력 오류')
-            if (!new RegExp(/^-?[0-9]*$/).test(light[2]))
+            if (!new RegExp(/^-?[0-9]*$/).test(splitedLine[2]))
                 return message.channel.send('금액 입력 오류')
-            const targetMoney = result[light[1]];
-            result[light[1]] = eval(light[2])
+            const targetMoney = result[splitedLine[1]];
+            result[splitedLine[1]] = eval(splitedLine[2])
 
             money[author] = result;
-            log[author] = [...log[author], `${light[0]} ${light[1]} ${targetMoney}`];
+            log[author] = [...log[author], `${splitedLine[0]} ${splitedLine[1]} ${targetMoney}`];
             record(money, log)
             printAccount(money[author])
         } else if (message.content.startsWith('!추가')) {
 
-            const light = message.content.toString().split(' ');
-            if (!(light[1] && light[2]))
+            if (!(splitedLine[1] && splitedLine[2]))
                 return message.channel.send('명령어 오류')
-            if (!new RegExp(/[가-힣a-zA-Z]/g).test(light[1]))
+            if (!new RegExp(/[가-힣a-zA-Z]/g).test(splitedLine[1]))
                 return message.channel.send('이름 입력 오류')
-            if (!new RegExp(/^-?[0-9]*$/).test(light[2]))
+            if (!new RegExp(/^-?[0-9]*$/).test(splitedLine[2]))
                 return message.channel.send('금액 입력 오류')
 
-            const target = light[1];
-            const targetMoney = light[2];
+            const target = splitedLine[1];
+            const targetMoney = splitedLine[2];
             money[author][target] = eval(money[author][target]) + eval(targetMoney)
             log[author] = [...log[author], message.content.toString()];
             message.channel.send(`${target} : ${money[author][target]}`)
@@ -104,27 +106,26 @@ client.on('message', message => {
             let command;
             if (command = log[author].pop() == undefined)
                 return message.channel.send('명령어 오류')
-            const light = command.split(' ');
-            const target = light[1];
-            switch (command) {
+            command = command.split(' ');
+            const target = command[1];
+            switch (command[0]) {
                 case '!추가':
-                    money[author][target] = eval(money[author][target]) - eval(light[2])
+                    money[author][target] = eval(money[author][target]) - eval(command[2])
                     break;
                 case '!삭제':
                 case '!빚':
-                    money[author][target] = eval(light[2])
+                    money[author][target] = eval(command[2])
             }
             record(money, log)
             printAccount(money[author])
         } else if (message.content.startsWith('!삭제')) {
-            const light = message.content.toString().split(' ');
 
-            if (!(light[1]))
+            if (!(splitedLine[1]))
                 return message.channel.send('명령어 오류')
-            if (!new RegExp(/[가-힣a-zA-Z]/g).test(light[1]))
+            if (!new RegExp(/[가-힣a-zA-Z]/g).test(splitedLine[1]))
                 return message.channel.send('이름 입력 오류')
 
-            const target = light[1];
+            const target = splitedLine[1];
             const targetMoney = money[author][target];
             money[author][target] = undefined;
             log[author] = [...log[author], message.content.toString() + ` ${targetMoney}`];
