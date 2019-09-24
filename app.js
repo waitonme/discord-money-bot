@@ -57,7 +57,7 @@ client.on('message', message => {
                 return message.channel.send('명령어 오류')
             if (!new RegExp(/[가-힣a-zA-Z]/g).test(light[1]))
                 return message.channel.send('이름 입력 오류')
-            if (!new RegExp(/[0-9]*/).test(light[2]))
+            if (!new RegExp(/^-?[0-9]*$/).test(light[2]))
                 return message.channel.send('금액 입력 오류')
             const targetMoney = result[light[1]];
             result[light[1]] = eval(light[2])
@@ -85,7 +85,7 @@ client.on('message', message => {
                 return message.channel.send('명령어 오류')
             if (!new RegExp(/[가-힣a-zA-Z]/g).test(light[1]))
                 return message.channel.send('이름 입력 오류')
-            if (!new RegExp(/[0-9]*/).test(light[2]))
+            if (!new RegExp(/^-?[0-9]*$/).test(light[2]))
                 return message.channel.send('금액 입력 오류')
 
             const target = light[1];
