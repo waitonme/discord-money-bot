@@ -3,6 +3,25 @@ const config = require('./config.json');
 var fs = require("fs");
 const client = new Discord.Client();
 
+function printAccount(a) {
+    const a = money[author]
+    let k = ""
+    for (key in a) {
+        if (!a[key])
+            continue;
+        k += key;
+        k += " : "
+        k += a[key];
+        k += '\n'
+    }
+    if (k) message.channel.send(k);
+    else message.channel.send("장부가 비었습니다 !")
+}
+
+function record(money, log) {
+    fs.writeFile("data.json", JSON.stringify(money), "utf8", () => { })
+    fs.writeFile("log.json", JSON.stringify(log), "utf8", () => { })
+}
 
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
@@ -64,20 +83,8 @@ client.on('message', message => {
 
             money[author] = result;
             log[author] = [...log[author], `${light[0]} ${light[1]} ${targetMoney}`];
-            fs.writeFile("data.json", JSON.stringify(money), "utf8", () => { })
-            fs.writeFile("log.json", JSON.stringify(log), "utf8", () => { })
-            const a = money[author]
-            let k = ""
-            for (key in a) {
-                if (!a[key])
-                    continue;
-                k += key;
-                k += " : "
-                k += a[key];
-                k += '\n'
-            }
-            if (k) message.channel.send(k);
-            else message.channel.send("장부가 비었습니다 !")
+            record(money, log)
+            printAccount(money[author])
         } else if (message.content.startsWith('!추가')) {
 
             const light = message.content.toString().split(' ');
@@ -93,41 +100,23 @@ client.on('message', message => {
             money[author][target] = eval(money[author][target]) + eval(targetMoney)
             log[author] = [...log[author], message.content.toString()];
             message.channel.send(`${target} : ${money[author][target]}`)
-
-            fs.writeFile("data.json", JSON.stringify(money), "utf8", () => { })
-            fs.writeFile("log.json", JSON.stringify(log), "utf8", () => { })
+            record(money, log)
         } else if (message.content.startsWith('!취소')) {
-
-            const command = log[author].pop();
-            console.log(command);
-            if (command.startsWith('!추가')) {
-                const light = command.split(' ');
-                const target = light[1];
-                money[author][target] = eval(money[author][target]) - eval(light[2])
-
-            } else if (command.startsWith('!삭제')) {
-                const light = command.split(' ');
-                const target = light[1];
-                money[author][target] = eval(light[2])
-
-            } else if (command.startsWith('!빚')) {
-                const light = command.split(' ');
-                const target = light[1];
-                money[author][target] = eval(light[2])
+            const command;
+            if (command = log[author].pop() == undefined)
+                return message.channel.send('명령어 오류')
+            const light = command.split(' ');
+            const target = light[1];
+            switch (command) {
+                case '!추가':
+                    money[author][target] = eval(money[author][target]) - eval(light[2])
+                    break;
+                case '!삭제':
+                case '!빚':
+                    money[author][target] = eval(light[2])
             }
-            const a = money[author]
-            let k = ""
-            for (key in a) {
-                if (!a[key])
-                    continue;
-                k += key;
-                k += " : "
-                k += a[key];
-                k += '\n'
-            }
-            if (k) message.channel.send(k);
-            else message.channel.send("장부가 비었습니다 !")
-
+            record(money, log)
+            printAccount(money[author])
         } else if (message.content.startsWith('!삭제')) {
             const light = message.content.toString().split(' ');
 
@@ -139,38 +128,12 @@ client.on('message', message => {
             const target = light[1];
             const targetMoney = money[author][target];
             money[author][target] = undefined;
-
-            const a = money[author]
-            let k = ""
-            for (key in a) {
-                if (!a[key])
-                    continue;
-                k += key;
-                k += " : "
-                k += a[key];
-                k += '\n'
-            }
-            if (k) message.channel.send(k);
-            else message.channel.send("장부가 비었습니다 !")
-
             log[author] = [...log[author], message.content.toString() + ` ${targetMoney}`];
-            fs.writeFile("data.json", JSON.stringify(money), "utf8", () => { })
-            fs.writeFile("log.json", JSON.stringify(log), "utf8", () => { })
+
+            record(money, log)
+            printAccount(money[author])
         } else if (message.content.startsWith('!장부')) {
-            const a = money[author]
-
-            let k = ""
-            for (key in a) {
-                if (!a[key])
-                    continue;
-                k += key;
-                k += " : "
-                k += a[key];
-                k += '\n'
-            }
-
-            if (k) message.channel.send(k);
-            else message.channel.send("장부가 비었습니다 !")
+            printAccount(money[author])
         }
     }
 });
