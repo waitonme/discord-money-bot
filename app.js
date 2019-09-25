@@ -3,7 +3,7 @@ const config = require('./config.json');
 var fs = require("fs");
 const client = new Discord.Client();
 
-function printAccount(a) {
+function printAccount(a, msg) {
     let k = ""
     for (key in a) {
         if (!a[key])
@@ -13,8 +13,8 @@ function printAccount(a) {
         k += a[key];
         k += '\n'
     }
-    if (k) message.channel.send(k);
-    else message.channel.send("장부가 비었습니다 !")
+    if (k) msg.channel.send(k);
+    else msg.channel.send("장부가 비었습니다 !")
 }
 
 function record(money, log) {
@@ -86,7 +86,7 @@ client.on('message', message => {
             money[author] = result;
             log[author] = [...log[author], `${splitedLine[0]} ${splitedLine[1]} ${targetMoney}`];
             record(money, log)
-            printAccount(money[author])
+            printAccount(money[author], message)
         } else if (message.content.startsWith('!추가')) {
 
             if (!(splitedLine[1] && splitedLine[2]))
@@ -104,7 +104,7 @@ client.on('message', message => {
             record(money, log)
         } else if (message.content.startsWith('!취소')) {
             let command;
-            if (command = log[author].pop() == undefined)
+            if ((command = log[author].pop()) == undefined)
                 return message.channel.send('명령어 오류')
             command = command.split(' ');
             const target = command[1];
@@ -117,7 +117,7 @@ client.on('message', message => {
                     money[author][target] = eval(command[2])
             }
             record(money, log)
-            printAccount(money[author])
+            printAccount(money[author], message)
         } else if (message.content.startsWith('!삭제')) {
 
             if (!(splitedLine[1]))
@@ -131,9 +131,9 @@ client.on('message', message => {
             log[author] = [...log[author], message.content.toString() + ` ${targetMoney}`];
 
             record(money, log)
-            printAccount(money[author])
+            printAccount(money[author], message)
         } else if (message.content.startsWith('!장부')) {
-            printAccount(money[author])
+            printAccount(money[author], message)
         }
     }
 });
