@@ -3,14 +3,14 @@ const config = require('./config.json');
 var fs = require("fs");
 const client = new Discord.Client();
 
-function printAccount(a, msg) {
+function printAccount(acconunt, msg) {
     let k = ""
-    for (key in a) {
-        if (!a[key])
+    for (key in acconunt) {
+        if (!acconunt[key])
             continue;
         k += key;
         k += " : "
-        k += a[key];
+        k += acconunt[key];
         k += '\n'
     }
     if (k) msg.channel.send(k);
@@ -24,7 +24,7 @@ function record(money, log) {
         fs.writeFile("log.json", JSON.stringify(log), "utf8", () => { })
 }
 
-function checkCommand(command, args, msg) {
+function checkCommand(command, args, message) {
 
     if (command.length != args) {
         message.channel.send('명령어 오류');
@@ -148,7 +148,6 @@ client.on('message', message => {
                     return message.channel.send('명령어 오류');
 
                 const line = command.split(' ');
-
                 const targetName = line[1];
                 const targetMoney = line[2];
 
@@ -182,6 +181,38 @@ client.on('message', message => {
     }
 });
 
+
+client.on('message', message => {
+    if (message.content.startsWith('!독촉')) {
+
+        const acconunt = money[author];
+        let k = [];
+        for (key in acconunt) {
+            if (!acconunt[key])
+                continue;
+            if (key.includes('@'))
+                k.add(key)
+        }
+        message.channel.members.forEach(value, key => {
+            console.log(`value ${value} key $key`)
+
+        });
+
+
+    }
+})
+
+function dock(message) {
+    const now = new Date();
+    const millisTill10 = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 9, 0, 0, 0) - now;
+    if (millisTill10 < 0) {
+        millisTill10 += 86400000; // it's after 9am, try 9am tomorrow.
+    }
+
+    setTimeout(function () {
+        message.channel.send(`주사위 결과 ${Math.floor(Math.random() * dice) + 1}`);
+    }, millisTill10);
+}
 
 
 client.login(config.token);
