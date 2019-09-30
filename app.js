@@ -3,14 +3,14 @@ const config = require('./config.json');
 var fs = require("fs");
 const client = new Discord.Client();
 
-function printAccount(a, msg) {
+function printAccount(acconunt, msg) {
     let k = ""
-    for (key in a) {
-        if (!a[key])
+    for (key in acconunt) {
+        if (!acconunt[key])
             continue;
         k += key;
         k += " : "
-        k += a[key];
+        k += acconunt[key];
         k += '\n'
     }
     if (k) msg.channel.send(k);
@@ -24,12 +24,42 @@ function record(money, log) {
         fs.writeFile("log.json", JSON.stringify(log), "utf8", () => { })
 }
 
+function checkCommand(command, args, message) {
+
+    if (command.length != args) {
+        message.channel.send('명령어 오류');
+        return false;
+    }
+    switch (args) {
+        case 2:
+            if (!checkName(command[1])) {
+                message.channel.send('이름 입력 오류');
+                return false;
+            }
+        case 3:
+            if (!checkNumber(command[2])) {
+                message.channel.send('금액 입력 오류');
+                return false;
+            }
+
+    }
+    return true
+}
+
+function checkNumber(number) {
+    return new RegExp(/^-?[0-9]*$/).test(number)
+}
+
+
+function checkName(name) {
+    return new RegExp(/[@가-힣a-zA-Z]/g).test(name)
+}
+
 client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
 });
 
-// 주기적으로 리마인드 시키기
-// toss나 카뱅 연동
+//todo 1. 독촉 2. 케장콘 3. 남의 장부 살피기
 
 client.on('message', msg => {
     if (msg.content === '!사용법' || msg.content === '!명령어' || msg.content === '!명령') {
@@ -57,7 +87,7 @@ client.on('message', msg => {
 client.on('message', message => {
     if (message.content.startsWith('!')) {
         const money = require("./data.json");
-        const log = require("./log.json")
+        const log = require("./log.json");
         const author = message.author;
 
         if (!money[author]) {
@@ -69,75 +99,123 @@ client.on('message', message => {
         }
 
         const splitedLine = message.content.toString().split(' ');
+        const acconunt = money[author];
 
-        if (message.content.startsWith('!빚')) {
+        switch (splitedLine[0]) {
+            case '!빚': {
+                if (!checkCommand(splitedLine, 3, message)) return;
 
-            const result = money[author];
 
-            if (!(splitedLine[1] && splitedLine[2]))
-                return message.channel.send('명령어 오류')
-            if (!new RegExp(/[가-힣a-zA-Z]/g).test(splitedLine[1]))
-                return message.channel.send('이름 입력 오류')
-            if (!new RegExp(/^-?[0-9]*$/).test(splitedLine[2]))
-                return message.channel.send('금액 입력 오류')
-            const targetMoney = result[splitedLine[1]];
-            result[splitedLine[1]] = eval(splitedLine[2])
+                const targetName = splitedLine[1]
+                const targetMoney = acconunt[targetName];
 
-            money[author] = result;
-            log[author] = [...log[author], `${splitedLine[0]} ${splitedLine[1]} ${targetMoney}`];
-            record(money, log)
-            printAccount(money[author], message)
-        } else if (message.content.startsWith('!추가')) {
+                acconunt[targetName] = eval(splitedLine[2]);
+                money[author] = acconunt;
+                log[author] = [...log[author], `${splitedLine[0]} ${targetName} ${targetMoney}`];
 
-            if (!(splitedLine[1] && splitedLine[2]))
-                return message.channel.send('명령어 오류')
-            if (!new RegExp(/[가-힣a-zA-Z]/g).test(splitedLine[1]))
-                return message.channel.send('이름 입력 오류')
-            if (!new RegExp(/^-?[0-9]*$/).test(splitedLine[2]))
-                return message.channel.send('금액 입력 오류')
-
-            const target = splitedLine[1];
-            const targetMoney = splitedLine[2];
-            money[author][target] = eval(money[author][target]) + eval(targetMoney)
-            log[author] = [...log[author], message.content.toString()];
-            message.channel.send(`${target} : ${money[author][target]}`)
-            record(money, log)
-        } else if (message.content.startsWith('!취소')) {
-            let command;
-            if ((command = log[author].pop()) == undefined)
-                return message.channel.send('명령어 오류')
-            command = command.split(' ');
-            const target = command[1];
-            switch (command[0]) {
-                case '!추가':
-                    money[author][target] = eval(money[author][target]) - eval(command[2])
-                    break;
-                case '!삭제':
-                case '!빚':
-                    money[author][target] = eval(command[2])
+                record(money, log);
+                printAccount(acconunt, message);
+                break;
             }
-            record(money, log)
-            printAccount(money[author], message)
-        } else if (message.content.startsWith('!삭제')) {
+            case '!추가': {
+                if (!checkCommand(splitedLine, 3, message)) return;
 
-            if (!(splitedLine[1]))
-                return message.channel.send('명령어 오류')
-            if (!new RegExp(/[가-힣a-zA-Z]/g).test(splitedLine[1]))
-                return message.channel.send('이름 입력 오류')
 
-            const target = splitedLine[1];
-            const targetMoney = money[author][target];
-            money[author][target] = undefined;
-            log[author] = [...log[author], message.content.toString() + ` ${targetMoney}`];
+                const targetName = splitedLine[1];
+                const targetMoney = splitedLine[2];
 
-            record(money, log)
-            printAccount(money[author], message)
-        } else if (message.content.startsWith('!장부')) {
-            printAccount(money[author], message)
+                acconunt[targetName] = eval(acconunt[targetName]) + eval(targetMoney)
+                log[author] = [...log[author], message.content.toString()];
+
+                record(money, log);
+                message.channel.send(`${targetName} : ${acconunt[targetName]}`);
+                break;
+            }
+            case '!삭제': {
+                if (!checkCommand(splitedLine, 2, message)) return;
+
+
+                const targetName = splitedLine[1];
+                const targetMoney = acconunt[targetName];
+                acconunt[targetName] = undefined;
+
+                log[author] = [...log[author], message.content.toString() + ` ${targetMoney}`];
+                record(money, log);
+                printAccount(acconunt, message);
+                break;
+            }
+            case '!취소': {
+                const command = log[author].pop() || 'undefined';
+                if (command === 'undefined')
+                    return message.channel.send('명령어 오류');
+
+                const line = command.split(' ');
+                const targetName = line[1];
+                const targetMoney = line[2];
+
+
+                switch (line[0]) {
+                    case '!추가':
+                        acconunt[target] = eval(acconunt[target]) - eval(targetMoney)
+                        break;
+                    case '!삭제':
+                    case '!빚':
+                        acconunt[target] = eval(targetMoney)
+                }
+                record(money, log)
+                printAccount(acconunt, message)
+                break;
+            }
+            case '!장부':
+                printAccount(acconunt, message);
+                break;
         }
     }
 });
 
+client.on('message', message => {
+    if (message.content.startsWith('!주사위')) {
+        const splitedLine = message.content.toString().split(' ');
+        const dice = splitedLine[1] || 5;
+        if (checkNumber(dice))
+            return message.channel.send(`주사위 결과 ${Math.floor(Math.random() * dice) + 1}`);
+        else
+            return message.channel.send(`주사위 결과 ${Math.floor(Math.random() * 5) + 1}`);
+    }
+});
+
+
+client.on('message', message => {
+    if (message.content.startsWith('!독촉')) {
+
+        const acconunt = money[author];
+        let k = [];
+        for (key in acconunt) {
+            if (!acconunt[key])
+                continue;
+            if (key.includes('@'))
+                k.add(key)
+        }
+        message.channel.members.forEach(value, key => {
+            console.log(`value ${value} key $key`)
+
+        });
+
+
+    }
+})
+
+function dock(message) {
+    const now = new Date();
+    const millisTill10 = new Date(now.getFullYear(), now.getMonth(), now.getDate(), 9, 0, 0, 0) - now;
+    if (millisTill10 < 0) {
+        millisTill10 += 86400000; // it's after 9am, try 9am tomorrow.
+    }
+
+    setTimeout(function () {
+        message.channel.send(`주사위 결과 ${Math.floor(Math.random() * dice) + 1}`);
+    }, millisTill10);
+}
 
 
 client.login(config.token);
