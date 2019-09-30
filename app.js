@@ -59,8 +59,7 @@ client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`);
 });
 
-// 주기적으로 리마인드 시키기
-// toss나 카뱅 연동
+//todo 1. 독촉 2. 케장콘 3. 남의 장부 살피기
 
 client.on('message', msg => {
     if (msg.content === '!사용법' || msg.content === '!명령어' || msg.content === '!명령') {
@@ -103,7 +102,7 @@ client.on('message', message => {
         const acconunt = money[author];
 
         switch (splitedLine[0]) {
-            case '!빚':
+            case '!빚': {
                 if (!checkCommand(splitedLine, 3, message)) return;
 
 
@@ -117,7 +116,8 @@ client.on('message', message => {
                 record(money, log);
                 printAccount(acconunt, message);
                 break;
-            case '!추가':
+            }
+            case '!추가': {
                 if (!checkCommand(splitedLine, 3, message)) return;
 
 
@@ -130,7 +130,8 @@ client.on('message', message => {
                 record(money, log);
                 message.channel.send(`${targetName} : ${acconunt[targetName]}`);
                 break;
-            case '!삭제':
+            }
+            case '!삭제': {
                 if (!checkCommand(splitedLine, 2, message)) return;
 
 
@@ -142,7 +143,8 @@ client.on('message', message => {
                 record(money, log);
                 printAccount(acconunt, message);
                 break;
-            case '!취소':
+            }
+            case '!취소': {
                 const command = log[author].pop() || 'undefined';
                 if (command === 'undefined')
                     return message.channel.send('명령어 오류');
@@ -163,6 +165,7 @@ client.on('message', message => {
                 record(money, log)
                 printAccount(acconunt, message)
                 break;
+            }
             case '!장부':
                 printAccount(acconunt, message);
                 break;
@@ -173,7 +176,7 @@ client.on('message', message => {
 client.on('message', message => {
     if (message.content.startsWith('!주사위')) {
         const splitedLine = message.content.toString().split(' ');
-        const dice = splitedLine[2] || 10;
+        const dice = splitedLine[1] || 5;
         if (checkNumber(dice))
             return message.channel.send(`주사위 결과 ${Math.floor(Math.random() * dice) + 1}`);
         else
