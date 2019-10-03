@@ -2,6 +2,9 @@ const Discord = require('discord.js')
 const config = require('./config.json')
 var fs = require("fs")
 const client = new Discord.Client()
+let intervals = {}
+
+
 
 function printAccount(acconunt, msg) {
     let k = ""
@@ -70,9 +73,10 @@ client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`)
 })
 
-//todo 1. 독촉 삭제 추가 2. 케장콘 3. 남의 장부 살피기
+//todo  1. 케장콘 2. 남의 장부 살피기
 
 client.on('message', msg => {
+
     if (msg.content === '!사용법' || msg.content === '!명령어' || msg.content === '!명령') {
         msg.channel.send(`--- 명령어 목록 ---
         !빚 빚진놈 금액
@@ -198,7 +202,21 @@ client.on('message', message => {
 
 
 client.on('message', message => {
+
+    if (message.content.startsWith('!독촉취소')) {
+        const author = message.author
+        if (intervals.author) {
+            client.clearInterval(intervals.author)
+            intervals.author = undefined
+            return message.channel.send(`독촉을 취소했다구리!`)
+        } else {
+            return message.channel.send(`취소할 독촉이 없다구리!`)
+        }
+    }
+
     if (message.content.startsWith('!독촉')) {
+
+        const author = message.author
         const splitedLine = message.content.toString().replace(/ +/g, ' ').split(' ')
 
         let H = 17
@@ -209,6 +227,14 @@ client.on('message', message => {
                 //from 0 to 23 (midnight to 11pm)
                 if (eval(splitedLine[1]) < 24 && eval(splitedLine[1]) >= 0)
                     H = splitedLine[1]
+            } else if (splitedLine[1] == '취소') {
+                if (intervals.author) {
+                    client.clearInterval(intervals.author)
+                    intervals.author = undefined
+                    return message.channel.send(`독촉을 취소했다구리!`)
+                } else {
+                    return message.channel.send(`취소할 독촉이 없다구리!`)
+                }
             }
         }
 
@@ -220,6 +246,9 @@ client.on('message', message => {
             }
         }
 
+        if (intervals.author)
+            return message.channel.send(`날 독촉해도 소용없다구리!`)
+
         const now = new Date()
 
         let millisTill10 = new Date(now.getFullYear(), now.getMonth(), now.getDate(), H, M, 0, 0) - now
@@ -227,12 +256,10 @@ client.on('message', message => {
             millisTill10 += 86400000 // it's after 9am, try 9am tomorrow.
         }
 
-        message.channel.send(`${H}시에 수금하러 갈거다 구리`)
+        message.channel.send(`${H}시 ${M}분에 수금하러 갈거다 구리`)
 
         const interval = client.setInterval(() => {
             const money = require("./data.json")
-            const author = message.author
-
             const acconunt = money[author]
             let k = ""
             for (key in acconunt) {
@@ -260,8 +287,9 @@ client.on('message', message => {
                 client.clearInterval(interval)
             }
         }, millisTill10)
-
+        intervals.author = interval
     }
+
 })
 
 
