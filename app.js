@@ -170,6 +170,9 @@ client.on('message', message => {
                     case '!삭제':
                     case '!빚':
                         acconunt[target] = eval(targetMoney)
+                        break
+                    default:
+                        return console.log('!취소 명령어 확인 요망' + command)
                 }
                 record(money, log)
                 printAccount(acconunt, message)
@@ -196,17 +199,37 @@ client.on('message', message => {
 
 client.on('message', message => {
     if (message.content.startsWith('!독촉')) {
+        const splitedLine = message.content.toString().replace(/ +/g, ' ').split(' ')
+
+        let H = 17
+        let M = 00
+
+        if (splitedLine[1]) {
+            if (checkNumber(splitedLine[1])) {
+                //from 0 to 23 (midnight to 11pm)
+                if (eval(splitedLine[1]) < 24 && eval(splitedLine[1]) >= 0)
+                    H = splitedLine[1]
+            }
+        }
+
+        if (splitedLine[2]) {
+            if (checkNumber(splitedLine[2])) {
+                //from 0 to 59 that
+                if (eval(splitedLine[2]) < 60 && eval(splitedLine[2]) >= 0)
+                    M = splitedLine[2]
+            }
+        }
 
         const now = new Date()
-        const H = 18
-        let millisTill10 = new Date(now.getFullYear(), now.getMonth(), now.getDate(), H, 0, 0, 0) - now
+
+        let millisTill10 = new Date(now.getFullYear(), now.getMonth(), now.getDate(), H, M, 0, 0) - now
         if (millisTill10 < 0) {
             millisTill10 += 86400000 // it's after 9am, try 9am tomorrow.
         }
 
         message.channel.send(`${H}시에 수금하러 갈거다 구리`)
 
-        client.setInterval(() => {
+        const interval = client.setInterval(() => {
             const money = require("./data.json")
             const author = message.author
 
@@ -218,7 +241,7 @@ client.on('message', message => {
                 if (chcekId(key)) {
                     if (client.users.has(key.replace(/[^0-9]/g, ''))) {
                         const user = client.users.get(key.replace(/[^0-9]/g, ''))
-                        k += key
+                        k += user
                     }
                 }
                 else {
@@ -230,11 +253,13 @@ client.on('message', message => {
             }
 
             if (k) {
-                message.channel.send("빨리 돈 갚아라 구리!")
+                k = author.username + "의 독촉장이다구리\n " + k + "\n"
                 message.channel.send(k)
+            } else {
+                message.channel.send("독촉할 사람이 없다구리!")
+                client.clearInterval(interval)
             }
-
-        }, millisTill10)
+        }, 5000)
 
     }
 })
