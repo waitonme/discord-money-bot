@@ -70,7 +70,11 @@ client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`)
 })
 
+<<<<<<< HEAD
 //todo 1. 독촉 취소 구현 2. 케장콘 3. 남의 장부 살피기
+=======
+//todo 1. 독촉 삭제 추가 2. 케장콘 3. 남의 장부 살피기
+>>>>>>> dice
 
 client.on('message', msg => {
     if (msg.content === '!사용법' || msg.content === '!명령어' || msg.content === '!명령') {
