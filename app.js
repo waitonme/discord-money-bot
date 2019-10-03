@@ -73,15 +73,22 @@ client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`)
 })
 
-//todo  1. 케장콘 2. 남의 장부 살피기
+//todo  1. 케장콘
 
 client.on('message', msg => {
+    if (message.content.startsWith('!')) {
+        const message = msg.content
+        switch (message) {
 
-    if (msg.content === '!사용법' || msg.content === '!명령어' || msg.content === '!명령') {
-        msg.channel.send(`--- 명령어 목록 ---
-        !빚 빚진놈 금액
- 예) !빚 승민 12000
- 내 장부에 승민 12000원 빚이 생김
+            case '!사용법':
+            case '!명령어':
+            case '!명령':
+            case '!도움':
+            case '!도움말':
+            case '!help':
+                msg.channel.send(`--- 명령어 목록 ---
+        !빚 빚진놈 금액, !빚 @사용자 금액
+ 내 장부에 빚을 기록함, @로 멘션할 경우 독촉할 때 멘션됨
 
         !추가 빚진놈 금액
  내 장부에 추가로 빚을 추가함 (음수도 가능).
@@ -90,11 +97,20 @@ client.on('message', msg => {
 내 장부에서 빚진놈 사라짐.
 
         !취소
- 직전 명령 취소
+직전 명령 취소
 
-        !장부
- 내 장부를 보여준다.
+        !장부, !장부 @사용자
+장부를 보여준다.
+        
+        !독촉, !독촉 시간 분, !독촉취소, !독촉 취소
+매일 오후 6시에 장부 목록을 채널에 표시함, 시간 설정가능
+(!빚 @사용자 금액 한 경우에 멘션으로 독촉함)
+
+        !주사위, !주사위 숫자
+기본 1~6 주사위, 임의의 수 가능
         `)
+
+        }
     }
 })
 
@@ -169,12 +185,20 @@ client.on('message', message => {
 
                 switch (line[0]) {
                     case '!추가':
-                        acconunt[target] = eval(acconunt[target]) - eval(targetMoney)
+                        acconunt[targetName] = eval(acconunt[targetName]) - eval(targetMoney)
                         break
                     case '!삭제':
                     case '!빚':
-                        acconunt[target] = eval(targetMoney)
+                        acconunt[targetName] = eval(targetMoney)
                         break
+                    case '!독촉':
+                        if (intervals.author) {
+                            client.clearInterval(intervals.author)
+                            intervals.author = undefined
+                            return message.channel.send(`독촉을 취소했다구리!`)
+                        } else {
+                            return message.channel.send(`취소할 독촉이 없다구리!`)
+                        }
                     default:
                         return console.log('!취소 명령어 확인 요망' + command)
                 }
@@ -183,6 +207,14 @@ client.on('message', message => {
                 break
             }
             case '!장부':
+                if (splitedLine[1]) {
+                    const targetName = splitedLine[1]
+                    if (!chcekId(targetName))
+                        return message.channel.send('명령어 오류')
+                    const otherAcconunt = money[targetName]
+                    printAccount(otherAcconunt, message)
+                    break
+                }
                 printAccount(acconunt, message)
                 break
         }
@@ -197,6 +229,14 @@ client.on('message', message => {
             return message.channel.send(`주사위 결과 ${Math.floor(Math.random() * dice) + 1}`)
         else
             return message.channel.send(`주사위 결과 ${Math.floor(Math.random() * 5) + 1}`)
+    }
+})
+
+client.on('message', message => {
+    if (message.content.startsWith('!icon')) {
+        return message.author.send(message.author.avatarURL)
+        //  message.channel.send(message.author.avatarURL)
+        
     }
 })
 
@@ -219,7 +259,7 @@ client.on('message', message => {
         const author = message.author
         const splitedLine = message.content.toString().replace(/ +/g, ' ').split(' ')
 
-        let H = 17
+        let H = 18
         let M = 00
 
         if (splitedLine[1]) {
@@ -288,10 +328,16 @@ client.on('message', message => {
             }
         }, millisTill10)
         intervals.author = interval
+        if (interval) {
+            const log = require("./log.json")
+            log[author] = [...log[author], '!독촉']
+            fs.writeFile("log.json", JSON.stringify(log), "utf8", () => { })
+        }
+
     }
 
 })
 
-
+client.on('error', console.error)
 
 client.login(config.token)
