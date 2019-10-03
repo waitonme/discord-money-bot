@@ -70,7 +70,7 @@ client.on('ready', () => {
     console.log(`Logged in as ${client.user.tag}!`)
 })
 
-//todo 1. 독촉 2. 케장콘 3. 남의 장부 살피기
+//todo 1. 독촉 취소 구현 2. 케장콘 3. 남의 장부 살피기
 
 client.on('message', msg => {
     if (msg.content === '!사용법' || msg.content === '!명령어' || msg.content === '!명령') {
@@ -259,7 +259,7 @@ client.on('message', message => {
                 message.channel.send("독촉할 사람이 없다구리!")
                 client.clearInterval(interval)
             }
-        }, 5000)
+        }, millisTill10)
 
     }
 })
