@@ -251,9 +251,9 @@ client.on('message', message => {
             i++
         }
         if (!splitedLine[1])
-            return message.channel.send(files + '\n이미지 이름이 필요하다구리!')
+            return message.channel.send(k + '\n이미지 이름이 필요하다구리!')
         if (!files.includes(splitedLine[1]))
-            return message.channel.send(files + '\n이미지 이름이 틀렸다구리!')
+            return message.channel.send(k + '\n이미지 이름이 틀렸다구리!')
 
         const filename = splitedLine[1]
         return message.channel.send({
