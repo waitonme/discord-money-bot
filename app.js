@@ -222,7 +222,7 @@ client.on('message', message => {
 
 client.on('message', message => {
     if (message.content.startsWith('!주사위')) {
-        const splitedLine = message.content.toString().split(' ')
+        const splitedLine = message.content.toString().replace(/ +/g, ' ').split(' ')
         const dice = splitedLine[1] || 5
         if (checkNumber(dice))
             return message.channel.send(`주사위 결과 ${Math.floor(Math.random() * dice) + 1}`)
@@ -232,7 +232,30 @@ client.on('message', message => {
 })
 
 client.on('message', message => {
-    if (message.content.startsWith('!절대안대')) {
+    if (message.content.startsWith('!짤')) {
+        const fs = require('fs')
+        let files = fs.readdirSync('./img')
+        const splitedLine = message.content.toString().replace(/ +/g, ' ').split(' ')
+
+        files = files.map(v => {
+            let a = v.split('.')
+            return a[0]
+        })
+        let k = ""
+        let i = 0
+        for (a in files) {
+            k += a
+            k += ' '
+            if (i % 10 == 0)
+                k += '\n'
+            i++
+        }
+        if (!splitedLine[1])
+            return message.channel.send(files + '\n이미지 이름이 필요하다구리!')
+        if (!files.includes(splitedLine[1]))
+            return message.channel.send(files + '\n이미지 이름이 틀렸다구리!')
+
+        const filename = splitedLine[1]
         return message.channel.send({
             // embed: {
             //     image: {
@@ -240,7 +263,7 @@ client.on('message', message => {
             //     }
             // },
             files: [{
-                attachment: './img/feelLight.png',
+                attachment: `./img/${filename}.png`,
                 name: 'file.jpg'
             }]
         })
