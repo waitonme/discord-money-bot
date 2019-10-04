@@ -242,14 +242,16 @@ client.on('message', message => {
             return a[0]
         })
         let k = ""
-        let i = 0
-        for (a in files) {
-            k += a
+        let i = 1
+
+        for (let a in files) {
+            k += files[a]
             k += ' '
             if (i % 10 == 0)
                 k += '\n'
             i++
         }
+
         if (!splitedLine[1])
             return message.channel.send(k + '\n이미지 이름이 필요하다구리!')
         if (!files.includes(splitedLine[1]))
