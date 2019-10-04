@@ -75,18 +75,17 @@ client.on('ready', () => {
 
 //todo  1. 케장콘
 
-client.on('message', msg => {
+client.on('message', message => {
     if (message.content.startsWith('!')) {
-        const message = msg.content
-        switch (message) {
-
+        const msg = message.content
+        switch (msg) {
             case '!사용법':
             case '!명령어':
             case '!명령':
             case '!도움':
             case '!도움말':
             case '!help':
-                msg.channel.send(`--- 명령어 목록 ---
+                message.channel.send(`--- 명령어 목록 ---
         !빚 빚진놈 금액, !빚 @사용자 금액
  내 장부에 빚을 기록함, @로 멘션할 경우 독촉할 때 멘션됨
 
@@ -233,10 +232,18 @@ client.on('message', message => {
 })
 
 client.on('message', message => {
-    if (message.content.startsWith('!icon')) {
-        return message.author.send(message.author.avatarURL)
-        //  message.channel.send(message.author.avatarURL)
-        
+    if (message.content.startsWith('!절대안대')) {
+        return message.channel.send({
+            // embed: {
+            //     image: {
+            //         url: 'attachment://file.jpg'
+            //     }
+            // },
+            files: [{
+                attachment: './img/feelLight.png',
+                name: 'file.jpg'
+            }]
+        })
     }
 })
 
